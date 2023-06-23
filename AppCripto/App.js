@@ -5,6 +5,8 @@ import CoinItem from './components/CoinItem'
 const App = () => {
 
   const [coins, setCoins] = useState([])
+  const [search, setSearch] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
 
   const loadData = async () => {
     const res = await fetch(
@@ -23,15 +25,28 @@ const App = () => {
       <StatusBar backgroundColor='#141414'/>
       <View style={styles.header}>
         <Text style={styles.title}>Cripto Market</Text>
-        <TextInput style={styles.searchInput}/>
+        <TextInput style={styles.searchInput}
+          placeholder='Search a Coin'
+          placeholderTextColor='#909090'
+          onChangeText={text => setSearch(text)}
+        />
       </View>
       <FlatList style={styles.list}
-        data={coins}
+        data={
+          coins.filter(coin => coin.name.toLowerCase().includes(search) 
+          || coin.name.toUpperCase().includes(search) 
+          || coin.symbol.toUpperCase().includes(search))
+        }
         renderItem={({item}) => {
-          console.log(item);
           return <CoinItem coin={item}/>
         }}
         showsHorizontalScrollIndicator={false}
+        refreshing={refreshing}
+        onRefresh={ async () =>{
+          setRefreshing(true)
+          await loadData();
+          setRefreshing(false)
+        }}
       />
     </View>
   )
